@@ -1,5 +1,5 @@
 # Komsys
-Semester Project for Design av Kommuniserende Systemer
+The purpose of this repositiory is to store and mange the code related to the semester Project for Design av Kommuniserende Systemer.
 
 # Useful technologies for the project
 
