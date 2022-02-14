@@ -1,7 +1,7 @@
 # Komsys
 Semester Project for Design av Kommuniserende Systemer
 
-#Useful technologies for the project
+# Useful technologies for the project
 
 Videocall
 - Video SDK: 
