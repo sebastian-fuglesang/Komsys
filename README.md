@@ -1,4 +1,4 @@
-# Komsys
+# Purpose of Repository
 The purpose of this repositiory is to store and mange the code related to the semester Project for Design av Kommuniserende Systemer.
 
 # Potentialy useful technologies for the project
