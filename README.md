@@ -15,3 +15,4 @@ Videocall
 
 Game in Firebase
 - https://feloy.medium.com/building-a-multi-player-board-game-with-firebase-firestore-functions-part-1-17527c5716c5
+- https://levelup.gitconnected.com/build-a-serverless-multiplayer-game-with-firebase-bf50454a1b69
