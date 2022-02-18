@@ -10,6 +10,7 @@ Videocall
 - WebRTC
   - https://webrtc.org/   
   - https://www.section.io/engineering-education/video-conferencing-app-with-react-node/ 
+  - løst i firebase: https://webrtc.org/getting-started/firebase-rtc-codelab
 - With Python
   - https://medium.com/geekculture/creating-video-chat-app-using-python-9da0a9c386ba
 
