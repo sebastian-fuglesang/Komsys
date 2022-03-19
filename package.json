@@ -1,0 +1,30 @@
+{
+  "name": "komsys",
+  "version": "1.0.0",
+  "description": "The purpose of this repositiory is to store and mange the code related to the semester Project for Design av Kommuniserende Systemer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devStart": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebastian-fuglesang/Komsys.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sebastian-fuglesang/Komsys/issues"
+  },
+  "homepage": "https://github.com/sebastian-fuglesang/Komsys#readme",
+  "dependencies": {
+    "ejs": "^3.1.6",
+    "express": "^4.17.3",
+    "socket.io": "^4.4.1",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
