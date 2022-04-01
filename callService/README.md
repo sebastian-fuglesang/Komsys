@@ -20,3 +20,6 @@ Game in Firebase
 
 Trivia Generator
 - https://opentdb.com/api_config.php
+
+Motion detection:
+- https://www.geeksforgeeks.org/webcam-motion-detector-python/
