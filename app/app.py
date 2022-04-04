@@ -3,7 +3,8 @@ import logging
 from threading import Thread
 import json
 from appJar import gui
-import appStyle as style;
+import appStyle as style
+import webbrowser
 
 # TODO: choose proper MQTT broker address
 MQTT_BROKER = 'mqtt.item.ntnu.no'
@@ -62,13 +63,14 @@ class SuperAwesomeApp:
             print("hei hei jeg er ikke tilgjengelig")
 
         def acceptCall():
+            webbrowser.get('/usr/bin/google-chrome %s').open_new('http://localhost:3000/a3c41af1-2275-430a-bdb5-8726e19ff228')
             publish_command("accept_call")
             print("Aksepter samtale")
 
         def denyCall():
             publish_command("deny_call")
             print("Ikke aksepter samtale")
-       
+
         self.app.addLabel("title", "Welcome to Super Awesome App")
         self.app.addButton('Tilgjengelig', announceAvailable)
         self.app.addButton('Utilgjengelig', announceUnavailable)
