@@ -63,7 +63,7 @@ class SuperAwesomeApp:
             print("hei hei jeg er ikke tilgjengelig")
 
         def acceptCall():
-            webbrowser.get('/usr/bin/google-chrome %s').open_new('http://localhost:3000/a3c41af1-2275-430a-bdb5-8726e19ff228')
+            webbrowser.get('/usr/bin/google-chrome %s').open_new('https://test-of-heroku2222.herokuapp.com/')
             publish_command("accept_call")
             print("Aksepter samtale")
 
