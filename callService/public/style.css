@@ -1,0 +1,29 @@
+.page-container {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    max-width: 1500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-container {
+    border: solid 1px black;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+}
+
+#video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+video {
+    max-width: 300px;
+    max-height: 300px;
+}
