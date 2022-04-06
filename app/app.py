@@ -24,13 +24,16 @@ class SuperAwesomeApp:
         self._logger.debug('MQTT connected to {}'.format(client))
 
     def on_message(self, client, userdata, msg):
-        pass
+        print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
+        print(msg.payload)
+        self.most_recent_room = str(msg.payload)
 
     def __init__(self):
         # get the logger object for the component
         self._logger = logging.getLogger(__name__)
         print('logging under name {}.'.format(__name__))
         self._logger.info('Starting Component')
+        self.most_recent_room = ""
 
         # create a new MQTT client
         self._logger.debug('Connecting to MQTT broker {} at port {}'.format(MQTT_BROKER, MQTT_PORT))
@@ -40,11 +43,14 @@ class SuperAwesomeApp:
         self.mqtt_client.on_message = self.on_message
         # Connect to the broker
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
+        #Subscribe to administrative topics
+        self.mqtt_client.subscribe("ttm4115/team07/calls")
         # start the internal loop to process MQTT messages
         self.mqtt_client.loop_start()
 
         self.create_gui()
     
+
 
     def create_gui(self):
         self.app = gui(**style.body)
@@ -63,7 +69,8 @@ class SuperAwesomeApp:
             print("hei hei jeg er ikke tilgjengelig")
 
         def acceptCall():
-            webbrowser.get('/usr/bin/google-chrome %s').open_new('http://localhost:3000/a3c41af1-2275-430a-bdb5-8726e19ff228')
+            print('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:])
+            webbrowser.get('/usr/bin/google-chrome %s').open_new('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
             publish_command("accept_call")
             print("Aksepter samtale")
 
