@@ -18,6 +18,35 @@ class SuperAwesomeApp:
     """
     The component to send voice commands.
     """
+    def announceAvailable(self):
+        print("hei hei jeg er tilgjengelig")
+        self.publish_command("Available")
+
+    def announceUnavailable(self):
+        self.publish_command("Unavailable")
+        print("hei hei jeg er ikke tilgjengelig")
+
+    def publish_command(self,command):
+        payload = json.dumps(command)
+        self._logger.info(command)
+        self.mqtt_client.publish(MQTT_TOPIC_INPUT, payload=payload, qos=2)
+
+    def acceptCall(self):
+        self.getting_called = False
+        self.app.removeAllWidgets()
+        self.app.addButton('Tilgjengelig', self.announceAvailable)
+        self.app.addButton('Utilgjengelig', self.announceUnavailable)
+        webbrowser.get('/usr/bin/google-chrome %s').open_new('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
+
+
+    def refuseCall(self):
+        self.getting_called = False
+        self.app.removeAllWidgets()
+        self.app.addButton('Tilgjengelig', self.announceAvailable)
+        self.app.addButton('Utilgjengelig', self.announceUnavailable)
+        
+
+    
 
     def on_connect(self, client, userdata, flags, rc):
         # we just log that we are connected
@@ -26,7 +55,12 @@ class SuperAwesomeApp:
     def on_message(self, client, userdata, msg):
         print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
         print(msg.payload)
-        self.most_recent_room = str(msg.payload)
+        if (msg.topic == "ttm4115/team07/calls"):
+            self.most_recent_room = str(msg.payload)
+            self.getting_called = True
+            print("getting called GUI called")
+            self.app.addButton("Aksepter samtale", self.acceptCall)
+            self.app.addButton("Nekt samtale", self.refuseCall )
 
     def __init__(self):
         # get the logger object for the component
@@ -34,6 +68,7 @@ class SuperAwesomeApp:
         print('logging under name {}.'.format(__name__))
         self._logger.info('Starting Component')
         self.most_recent_room = ""
+        self.getting_called = False
 
         # create a new MQTT client
         self._logger.debug('Connecting to MQTT broker {} at port {}'.format(MQTT_BROKER, MQTT_PORT))
@@ -51,40 +86,12 @@ class SuperAwesomeApp:
         self.create_gui()
     
 
-
     def create_gui(self):
         self.app = gui(**style.body)
-
-        def publish_command(command):
-            payload = json.dumps(command)
-            self._logger.info(command)
-            self.mqtt_client.publish(MQTT_TOPIC_INPUT, payload=payload, qos=2)
-
-        def announceAvailable():
-            print("hei hei jeg er tilgjengelig")
-            publish_command("Available")
-
-        def announceUnavailable():
-            publish_command("Unavailable")
-            print("hei hei jeg er ikke tilgjengelig")
-
-        def acceptCall():
-            print('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:])
-            webbrowser.get('/usr/bin/google-chrome %s').open_new('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
-            publish_command("accept_call")
-            print("Aksepter samtale")
-
-        def denyCall():
-            publish_command("deny_call")
-            print("Ikke aksepter samtale")
-
         self.app.addLabel("title", "Welcome to Super Awesome App")
-        self.app.addButton('Tilgjengelig', announceAvailable)
-        self.app.addButton('Utilgjengelig', announceUnavailable)
-        self.app.addButton("Aksepter samtale", acceptCall)
-        self.app.addButton("Nekt samtale", denyCall)
+        self.app.addButton('Tilgjengelig', self.announceAvailable)
+        self.app.addButton('Utilgjengelig', self.announceUnavailable)
         self.app.go()
-
 
     def stop(self):
         """
