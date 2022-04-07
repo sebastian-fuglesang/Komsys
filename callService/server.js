@@ -61,8 +61,9 @@ io.on("connection", (socket) => {
         socket.join(roomId);
         socket.to(roomId).broadcast.emit("user-connected", userId);
         client.publish(topic, roomId,)
-        socket.on('messageSent', (msg) => {
-            socket.to(roomId).emit('messageReceived', msg);
+        socket.on('messageSent', (text, userId) => {
+            //socket.to(roomId).emit('messageReceived', msg);
+            io.sockets.in(roomId).emit("messageReceived", text, userId)
           });
         socket.on('disconnect', () => {
             socket.to(roomId).broadcast.emit('user-disconnected', userId)

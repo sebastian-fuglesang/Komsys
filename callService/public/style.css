@@ -1,3 +1,8 @@
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
 .page-container {
     margin: auto;
     width: 100%;
@@ -6,21 +11,68 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
 }
 
 #chat-container {
     border: solid 1px black;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    
+    height: min(600px, 40vh);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    width: min(400px, 90vw);
+}
+
+#chat-message-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+#message-form {
+    flex-grow: 0;
+    width: min(400px, 90vw);
+    display: flex;
+    flex-direction: row;
+}
+
+#message-input {
+    width: 60%;
+    height: 1rem;
+    border-radius: 5px;
+}
+
+#send-message {
+    background-color: lightgray;
+    width: 35%;
+
+}
+
+.message {
+    border: solid 1px black;
+    padding: 1rem;
+    font-size: 1.5rem;
+    border-radius: 20px;
+    margin: 10px;
+    width: fit-content;
+}
+
+.others-message {
+    background-color: green;
+    align-self: flex-start;
+}
+
+.own-message {
+    background-color: blue;
+    align-self: flex-end;
 }
 
 #video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 2rem;
+    width: min(100%, 1000px)
 }
 
 video {
