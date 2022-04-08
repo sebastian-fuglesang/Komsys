@@ -36,6 +36,7 @@ def draw_lines():
 
 	pygame.draw.line( screen, LINE_COLOR, (2 * SQUARE_SIZE, 0), (2 * SQUARE_SIZE, HEIGHT), LINE_WIDTH )
 
+# player 1 = Circle O, player 2 = Cross X
 def draw_figures():
 	for row in range(BOARD_ROWS):
 		for col in range(BOARD_COLS):
@@ -62,23 +63,42 @@ def is_board_full():
 def check_win(player):
 	for col in range(BOARD_COLS):
 		if board[0][col] == player and board[1][col] == player and board[2][col] == player:
+			print_winner(player)
 			draw_vertical_winning_line(col, player)
 			return True
 
 	for row in range(BOARD_ROWS):
 		if board[row][0] == player and board[row][1] == player and board[row][2] == player:
+			print_winner(player)
 			draw_horizontal_winning_line(row, player)
 			return True
 
+	#Diagonal win:
 	if board[2][0] == player and board[1][1] == player and board[0][2] == player:
+		print_winner(player)
 		draw_asc_diagonal(player)
 		return True
 
 	if board[0][0] == player and board[1][1] == player and board[2][2] == player:
+		print_winner(player)
 		draw_desc_diagonal(player)
 		return True
 
 	return False
+
+"""
+Maybe use this function to send to mqtt.
+Ideas:
+-At the beginning, define through mqtt who's player 1 & 2, from each round publish winner 1 || 2,  through mqtt add up score.
+-Or keep track of the score locally, at the end of the dialogue publish the final results through mqtt, which forwards it to leaderboard database?
+-Or maybe find a way to track score different than 1 || 2, by adding names. ( Can take a while)
+"""
+def print_winner(player):
+	if player==1:
+		print("Player 1 (O) has won the game")
+	else:
+		print("Player 2 (X) has won the game")
+
 
 def draw_vertical_winning_line(col, player):
 	posX = col * SQUARE_SIZE + SQUARE_SIZE//2
@@ -128,6 +148,7 @@ draw_lines()
 player = 1
 game_over = False
 
+# main loop
 while True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -150,6 +171,7 @@ while True:
 
 				draw_figures()
 
+		# press "r" to restart game.
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_r:
 				restart()
