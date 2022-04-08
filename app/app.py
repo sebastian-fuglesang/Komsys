@@ -32,18 +32,18 @@ class SuperAwesomeApp:
         self.mqtt_client.publish(MQTT_TOPIC_INPUT, payload=payload, qos=2)
 
     def acceptCall(self):
-        self.getting_called = False
-        self.app.removeAllWidgets()
-        self.app.addButton('Tilgjengelig', self.announceAvailable)
-        self.app.addButton('Utilgjengelig', self.announceUnavailable)
-        webbrowser.get('/usr/bin/google-chrome %s').open_new('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
+        if self.getting_called:
+            self.getting_called = False
+            self.app.setButtonBg("Aksepter samtale", "grey")
+            self.app.setButtonBg("Nekt samtale", "grey")
+            webbrowser.get('/usr/bin/google-chrome %s &').open_new('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
 
 
     def refuseCall(self):
-        self.getting_called = False
-        self.app.removeAllWidgets()
-        self.app.addButton('Tilgjengelig', self.announceAvailable)
-        self.app.addButton('Utilgjengelig', self.announceUnavailable)
+        if self.getting_called:
+            self.getting_called = False
+            self.app.setButtonBg("Aksepter samtale", "grey")
+            self.app.setButtonBg("Nekt samtale", "grey")
         
 
     
@@ -58,9 +58,10 @@ class SuperAwesomeApp:
         if (msg.topic == "ttm4115/team07/calls"):
             self.most_recent_room = str(msg.payload)
             self.getting_called = True
-            print("getting called GUI called")
-            self.app.addButton("Aksepter samtale", self.acceptCall)
-            self.app.addButton("Nekt samtale", self.refuseCall )
+            self.app.setButtonBg("Aksepter samtale", "green")
+            self.app.setButtonBg("Nekt samtale", "red")
+
+
 
     def __init__(self):
         # get the logger object for the component
@@ -91,6 +92,14 @@ class SuperAwesomeApp:
         self.app.addLabel("title", "Welcome to Super Awesome App")
         self.app.addButton('Tilgjengelig', self.announceAvailable)
         self.app.addButton('Utilgjengelig', self.announceUnavailable)
+        self.app.addButton("Aksepter samtale", self.acceptCall)
+        self.app.addButton("Nekt samtale", self.refuseCall )
+        self.app.setButtonBg("Aksepter samtale", "grey")
+        self.app.setButtonBg("Nekt samtale", "grey")
+        self.app.setButtonBg("Tilgjengelig", "grey")
+        self.app.setButtonBg("Utilgjengelig", "grey")
+
+
         self.app.go()
 
     def stop(self):
