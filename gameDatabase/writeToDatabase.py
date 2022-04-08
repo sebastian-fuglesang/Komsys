@@ -20,9 +20,22 @@ def writeToDatabase(username):
         mycursor.execute("INSERT INTO results (username, points) VALUES (%s, 1)",([username]))
         mydb.commit()
 
+def checkUsername(username):
+    mycursor.execute("SELECT username FROM results WHERE username = %s", ([username]))
+
+    if(mycursor.fetchone() == ((username,))):
+        print("this username is already in use")
+    else:
+        writeToDatabase(username)
+
+
 def readFromDatabase():
-    #Litt avhengig av hva slags format Nils ønsker på output. 
-    print("l")
+    mycursor.execute("SELECT * FROM results ORDER BY points DESC")
+
+    for x in mycursor:
+        print(x)
+    #Litt avhengig av hva slags format Nils ønsker på output.
+    # Vil nok ha en finere output her.  
 
 def checkWinner(player1, player2, result):
     #   writeToDatabase(winner)
@@ -49,4 +62,6 @@ def main():
         createTable()
 
 #main()
-writeToDatabase("nils")
+#writeToDatabase("sigurd")
+#checkUsername("nils")
+readFromDatabase()
