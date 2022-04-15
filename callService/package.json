@@ -1,22 +1,21 @@
 {
-  "name": "js-fundamentals-test",
+  "name": "heroku-call-service",
   "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
+  "description": "Functionality for the video call part of the semester project for TTM4115",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Sebastian Fuglesang",
   "license": "ISC",
   "dependencies": {
     "ejs": "^3.1.6",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "mqtt": "^4.3.7",
     "nodemon": "^2.0.15",
     "peer": "^0.6.1",
-    "socket.io": "^2.4.1",
+    "socket.io": "^4.4.1",
     "uuid": "^8.3.2"
   }
 }

@@ -3,17 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>videoChatApp</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>VideoChatApp</title>
+    <link rel="stylesheet" href="style.css" />   
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.3.2/dist/peerjs.min.js"></script>
     <script>
       const ROOM_ID = "<%= roomId %>";
     </script>
   </head>
   <body>
     <div class="page-container">
-        <h3>Video Chat</h2> 
+        <h3>Videocall and chat service</h2> 
         <div id="video-grid"></div>
         <div id="chat-container">
           <div id="chat-message-container"></div>
@@ -24,7 +24,5 @@
         </div>
   </div>
   </body>
-  <script src="script.js"></script>
+  <script src="client.js"></script>
 </html>
-
-
