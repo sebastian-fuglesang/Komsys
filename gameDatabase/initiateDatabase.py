@@ -5,3 +5,5 @@ mycursor = mydb.cursor()
 
 def main():
     mycursor.execute("CREATE DATABASE gameResults")
+
+#Denne databasen er kun på localhost, holder det?
