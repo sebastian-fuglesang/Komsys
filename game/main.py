@@ -143,6 +143,10 @@ def restart():
 		for col in range(BOARD_COLS):
 			board[row][col] = 0
 
+def on_message():
+	print("payload: " + "str(msg.payload)")
+	#return clicked_row, clicked_col, player
+
 draw_lines()
 
 player = 1
@@ -165,6 +169,13 @@ while True:
 			if available_square( clicked_row, clicked_col ):
 
 				mark_square( clicked_row, clicked_col, player )
+				# Send over mqtt clicked_row, clicked_col, player (?)
+				""" 
+				mqttc.publish(clicked_row, clicked_col, player)
+				info = on_message()
+				if available_square(info.clicked_row, info.clicked_col, info.player)
+					mark_square(info.clicked_row, info.clicked_col, info.player)
+				"""
 				if check_win( player ):
 					game_over = True
 				player = player % 2 + 1
@@ -179,3 +190,4 @@ while True:
 				game_over = False
 
 	pygame.display.update()
+	#https://github.com/KenObie/mqtt-iot see for inspiration
