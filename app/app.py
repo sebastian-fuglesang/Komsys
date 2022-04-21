@@ -36,8 +36,7 @@ class SuperAwesomeApp:
             self.getting_called = False
             self.app.setButtonBg("Aksepter samtale", "grey")
             self.app.setButtonBg("Nekt samtale", "grey")
-            webbrowser.get('/usr/bin/google-chrome %s &').open_new('https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
-
+            webbrowser.get('/usr/bin/google-chrome %s &').open_new('https://heroku-call-service.herokuapp.com/' + self.most_recent_room[2:-1])
 
     def refuseCall(self):
         if self.getting_called:
@@ -45,9 +44,6 @@ class SuperAwesomeApp:
             self.app.setButtonBg("Aksepter samtale", "grey")
             self.app.setButtonBg("Nekt samtale", "grey")
         
-
-    
-
     def on_connect(self, client, userdata, flags, rc):
         # we just log that we are connected
         self._logger.debug('MQTT connected to {}'.format(client))
@@ -60,8 +56,6 @@ class SuperAwesomeApp:
             self.getting_called = True
             self.app.setButtonBg("Aksepter samtale", "green")
             self.app.setButtonBg("Nekt samtale", "red")
-
-
 
     def __init__(self):
         # get the logger object for the component
