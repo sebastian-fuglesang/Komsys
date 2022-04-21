@@ -246,7 +246,7 @@ if __name__ == "__main__":
     t=SuperAwesomeApp()
 
 
-    gameController.mqtt_client = t.mqtt_client #...
+    gameController.mqtt_client = t.mqtt_client 
     t.mqtt_client.stm_driver = driver
 
 
