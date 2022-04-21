@@ -1,5 +1,30 @@
+import paho.mqtt.client as mqtt
+import logging
+import json
 import pygame, sys
 import numpy as np
+
+MQTT_BROKER = 'mqtt.item.ntnu.no'
+MQTT_PORT = 1883
+
+MQTT_TOPIC = 'ttm4115/team07/gameLobby'
+
+def on_connect(client, userdata, flags, rc):
+	print("Connection returned result: " + str(rc) )
+
+def on_message(client, msg):
+	print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
+
+mqtt_client = mqtt.Client()
+# callback methods
+mqtt_client.on_connect = on_connect
+mqtt_client.on_message = on_message
+# Connect to the broker
+mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
+#Subscribe to administrative topics
+# start the internal loop to process MQTT messages
+mqtt_client.loop_start()
+
 pygame.init()
 
 WIDTH = 600
@@ -19,6 +44,8 @@ BG_COLOR = (20, 200, 160)
 LINE_COLOR = (23, 145, 135)
 CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
+
+
 
 screen = pygame.display.set_mode( (WIDTH, HEIGHT) )
 pygame.display.set_caption( 'TIC TAC TOE' )
@@ -94,6 +121,11 @@ Ideas:
 -Or maybe find a way to track score different than 1 || 2, by adding names. ( Can take a while)
 """
 def print_winner(player):
+	data ={
+			'winner' : player
+			}
+	payload = json.dumps(data)
+	mqtt_client.publish(MQTT_TOPIC, payload=payload , qos=2)
 	if player==1:
 		print("Player 1 (O) has won the game")
 	else:
@@ -143,8 +175,8 @@ def restart():
 		for col in range(BOARD_COLS):
 			board[row][col] = 0
 
-def on_message():
-	print("payload: " + "str(msg.payload)")
+def on_message(client, userdata, msg):
+	print(msg.topic+" "+str(msg.payload))
 	#return clicked_row, clicked_col, player
 
 draw_lines()
@@ -169,9 +201,17 @@ while True:
 			if available_square( clicked_row, clicked_col ):
 
 				mark_square( clicked_row, clicked_col, player )
+				
 				# Send over mqtt clicked_row, clicked_col, player (?)
+				data ={
+					'row' : clicked_row,
+					'col' : clicked_col,
+					'play' : player
+				}
+				payload = json.dumps(data)
+				mqtt_client.publish(MQTT_TOPIC, payload=payload, qos=2)
 				""" 
-				mqttc.publish(clicked_row, clicked_col, player)
+				mqtt_client.publish(clicked_row, clicked_col, player)
 				info = on_message()
 				if available_square(info.clicked_row, info.clicked_col, info.player)
 					mark_square(info.clicked_row, info.clicked_col, info.player)
@@ -185,6 +225,11 @@ while True:
 		# press "r" to restart game.
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_r:
+				"""
+				Publish "restart"
+				"""
+				print("restarting..")
+				mqtt_client.publish(MQTT_TOPIC, "restart", qos=2)
 				restart()
 				player = 1
 				game_over = False
