@@ -1,4 +1,5 @@
 import mysql.connector
+from leaderboard import leaderboard
 mydb = mysql.connector.connect(host="gameresultdb.mysql.database.azure.com", user ="komsysAdmin", passwd="qwerty123!",  port=3306, database="gameresult")
 
 tableList = []
