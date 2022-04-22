@@ -1,6 +1,8 @@
 from appJar import gui
 from stmpy import Machine, Driver
 from motionDetectorTumbsup import motion_detector
+import webbrowser
+
 class OfficeController:
     """
     State machine for the office controller
@@ -15,6 +17,10 @@ class OfficeController:
 
         def on_request_ok():
             self.stm.send('server_request_ok')
+            #for linux: 
+            # webbrowser.get('/usr/bin/google-chrome %s &').open_new('https://heroku-call-service.herokuapp.com/')
+            #for windows:
+            webbrowser.open_new('https://heroku-call-service.herokuapp.com/')
             print('Request OK...')
 
         def on_request_bad():

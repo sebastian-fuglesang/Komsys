@@ -19,9 +19,6 @@ model = load_model('mp_hand_gesture')
 f = open('gesture.names', 'r')
 classNames = f.read().split('\n')
 f.close()
-print(classNames)
-
-motion = False
 
 def motion_detector():
 
@@ -40,9 +37,6 @@ def motion_detector():
 
         # Get hand landmark prediction
         result = hands.process(framergb)
-
-        # print(result)
-        
         className = ''
 
         # post process the result
@@ -50,40 +44,26 @@ def motion_detector():
             landmarks = []
             for handslms in result.multi_hand_landmarks:
                 for lm in handslms.landmark:
-                    # print(id, lm)
                     lmx = int(lm.x * x)
                     lmy = int(lm.y * y)
 
                     landmarks.append([lmx, lmy])
 
-                # Drawing landmarks on frames
-                #mpDraw.draw_landmarks(frame, handslms, mpHands.HAND_CONNECTIONS)
-
                 # Predict gesture
                 prediction = model.predict([landmarks])
-                # print(prediction)
                 classID = np.argmax(prediction)
                 className = classNames[classID]
-
 
         # show the prediction on the frame
         if className == 'thumbs up':
             cv2.putText(frame, className + ': Call activated', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
             cap.release()
             cv2.destroyAllWindows()
-            return True
-
-            
+            return True  
 
         # Show the final output
-        cv2.imshow("Output", frame) 
-
+        cv2.imshow("Output", frame)
         if cv2.waitKey(1) == ord('q'):
             cap.release()
 
             cv2.destroyAllWindows()
-
-# release the webcam and destroy all active windows
-#cap.release()
-
-#cv2.destroyAllWindows()
