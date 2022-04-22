@@ -1,5 +1,6 @@
 from appJar import gui
-#from writeToDatabase import db
+from gameDatabase.writeToDatabase import db
+import re
 
 def winner(player):
     app = gui()
@@ -7,7 +8,8 @@ def winner(player):
     def get_input():
         print(app.getEntry('winner'))
         name = app.getEntry('winner')
-        
+        re.sub('[^a-zA-Z]+', '', name.replace(" ", "").upper())
+        db.writeToDatabase(name)
         app.stop()
 
     #fetch from db

@@ -13,6 +13,7 @@ class db:
 
 
     def writeToDatabase(username):
+        print(username)
         if(db.checkExistingUser(username)):
             mycursor.execute("UPDATE results SET points = points +1 WHERE username = %s", ([username]))
             mydb.commit()
