@@ -61,7 +61,7 @@ def main():
     if("('results',)" not in str(tableList)):
         createTable()
 
-#main()
+main()
 #writeToDatabase("nils")
 #checkUsername("nils")
-#readFromDatabase()
+readFromDatabase()
