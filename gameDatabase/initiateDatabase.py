@@ -1,5 +1,5 @@
 import mysql.connector
-mydb = mysql.connector.connect(host="localhost", user ="root", passwd="komsysTeam07")
+mydb = mysql.connector.connect(host="gameresultdb.mysql.database.azure.com", user ="komsysAdmin", passwd="qwerty123!", port=3306, ssl_disabled=True)
 
 mycursor = mydb.cursor()
 
