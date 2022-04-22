@@ -1,5 +1,5 @@
 import mysql.connector
-from leaderboard import leaderboard
+import re
 mydb = mysql.connector.connect(host="gameresultdb.mysql.database.azure.com", user ="komsysAdmin", passwd="qwerty123!",  port=3306, database="gameresult")
 
 tableList = []
@@ -13,6 +13,7 @@ class db:
 
 
     def writeToDatabase(username):
+        print(username)
         if(db.checkExistingUser(username)):
             mycursor.execute("UPDATE results SET points = points +1 WHERE username = %s", ([username]))
             mydb.commit()
@@ -45,16 +46,40 @@ class db:
         #  Hvis vi skal ha med vinner og taper må database strukturen endres og poengsystemet endres.
         print("k")
 
+def defineUsername(name):
+    return re.sub('[^a-zA-Z]+', '', name.replace(" ", "").upper())
 
-    def checkExistingUser(username):
-        mycursor.execute("SELECT username FROM results WHERE username = %s", ([username]))
+def readFromDatabase():
+    mycursor.execute("SELECT * FROM results ORDER BY points DESC")
 
-        if(mycursor.fetchone() == ((username,))):
-            return True
-        else:
-            return False
+    for x in mycursor:
+        print(x)
+
+#def checkWinner(player1, player2, result):
+    #   writeToDatabase(winner)
+    #  Spørs om vi skal ta med resultat for begge spillere, eller kun notere den som vinner. 
+    #  Hvis vi skal ha med vinner og taper må database strukturen endres og poengsystemet endres.
+    #print("k")
 
 
+def checkExistingUser(username):
+    mycursor.execute("SELECT username FROM results WHERE username = %s", ([username]))
+
+    if(mycursor.fetchone() == ((username,))):
+        return True
+    else:
+        return False
+
+def main():
+    mycursor.execute("SHOW TABLES")
+    for x in mycursor:
+        tableList.append(x)
+    
+
+    if("('results',)" not in str(tableList)):
+        createTable()
+
+#print(defineUsername("Jacob Fredheim"))
 #main()
 #writeToDatabase("nils")
 #checkUsername("nils")
