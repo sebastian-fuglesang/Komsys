@@ -1,5 +1,5 @@
 from appJar import gui
-from gameDatabase.writeToDatabase import db
+from writeToDatabase import db
 import re
 
 def winner(player):
