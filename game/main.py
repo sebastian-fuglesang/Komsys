@@ -3,17 +3,25 @@ import logging
 import json
 import pygame, sys
 import numpy as np
+import re
 
 MQTT_BROKER = 'mqtt.item.ntnu.no'
 MQTT_PORT = 1883
 
 MQTT_TOPIC = 'ttm4115/team07/gameLobby'
-
+MQTT_MOVES = (9,9,9)
 def on_connect(client, userdata, flags, rc):
 	print("Connection returned result: " + str(rc) )
 
-def on_message(client, msg):
-	print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
+def on_message(client, userdata, msg):
+	#print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
+	print(msg.topic+" "+str(msg.payload))
+	#Extract numbers from string
+	data = str(msg.payload)
+	mylist = re.findall(r'\d+', data)
+	print(mylist[0] + mylist[1] + mylist[2])
+	global MQTT_MOVES 
+	MQTT_MOVES= mylist
 
 mqtt_client = mqtt.Client()
 # callback methods
@@ -23,6 +31,8 @@ mqtt_client.on_message = on_message
 mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
 #Subscribe to administrative topics
 # start the internal loop to process MQTT messages
+
+mqtt_client.subscribe(MQTT_TOPIC)
 mqtt_client.loop_start()
 
 pygame.init()
@@ -45,13 +55,13 @@ LINE_COLOR = (23, 145, 135)
 CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
 
-
-
 screen = pygame.display.set_mode( (WIDTH, HEIGHT) )
 pygame.display.set_caption( 'TIC TAC TOE' )
 screen.fill( BG_COLOR )
 
 board = np.zeros( (BOARD_ROWS, BOARD_COLS) )
+
+
 
 def draw_lines():
 	
@@ -174,23 +184,32 @@ def restart():
 	for row in range(BOARD_ROWS):
 		for col in range(BOARD_COLS):
 			board[row][col] = 0
-
-def on_message(client, userdata, msg):
-	print(msg.topic+" "+str(msg.payload))
-	#return clicked_row, clicked_col, player
+	print(board)
+#clickedlast false notfirst false
 
 draw_lines()
 
 player = 1
 game_over = False
+clicked_last = False
 
 # main loop
 while True:
+	#Gets the next move through MQTT - User cant play before mqtt move has been made.
+	if clicked_last and MQTT_MOVES[0] != 9:
+		if available_square( int(MQTT_MOVES[0]), int(MQTT_MOVES[1]) ):
+			mark_square( int(MQTT_MOVES[0]), int(MQTT_MOVES[1]), int(MQTT_MOVES[2]) )
+			clicked_last = False
+			if check_win( player ):
+				game_over = True
+			player = player % 2 + 1
+			draw_figures()
+			
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
 
-		if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+		if event.type == pygame.MOUSEBUTTONDOWN and not game_over and not clicked_last:
 
 			mouseX = event.pos[0] 
 			mouseY = event.pos[1] 
@@ -210,29 +229,27 @@ while True:
 				}
 				payload = json.dumps(data)
 				mqtt_client.publish(MQTT_TOPIC, payload=payload, qos=2)
-				""" 
-				mqtt_client.publish(clicked_row, clicked_col, player)
-				info = on_message()
-				if available_square(info.clicked_row, info.clicked_col, info.player)
-					mark_square(info.clicked_row, info.clicked_col, info.player)
-				"""
+				clicked_last = True 
+
 				if check_win( player ):
 					game_over = True
 				player = player % 2 + 1
 
 				draw_figures()
 
+		# if not clicked_last:
+		# 	print("Now listening?")
+		# 	mqtt_client.subscribe(MQTT_TOPIC)
+
 		# press "r" to restart game.
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_r:
-				"""
-				Publish "restart"
-				"""
-				print("restarting..")
 				mqtt_client.publish(MQTT_TOPIC, "restart", qos=2)
 				restart()
 				player = 1
 				game_over = False
+				clicked_last = False
+				MQTT_MOVES = (9,9,9)
 
 	pygame.display.update()
 	#https://github.com/KenObie/mqtt-iot see for inspiration
