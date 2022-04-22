@@ -1,5 +1,5 @@
 import mysql.connector
-mydb = mysql.connector.connect(host="localhost", user ="root", passwd="komsysTeam07", database="gameResults")
+mydb = mysql.connector.connect(host="gameresultdb.mysql.database.azure.com", user ="komsysAdmin", passwd="qwerty123!",  port=3306, database="gameresult")
 
 tableList = []
 
@@ -62,6 +62,6 @@ def main():
         createTable()
 
 #main()
-#writeToDatabase("sigurd")
+#writeToDatabase("nils")
 #checkUsername("nils")
-readFromDatabase()
+#readFromDatabase()
