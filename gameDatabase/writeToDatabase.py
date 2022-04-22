@@ -1,4 +1,5 @@
 import mysql.connector
+import re
 mydb = mysql.connector.connect(host="gameresultdb.mysql.database.azure.com", user ="komsysAdmin", passwd="qwerty123!",  port=3306, database="gameresult")
 
 tableList = []
@@ -29,19 +30,20 @@ def checkUsername(username):
         writeToDatabase(username)
 
 
+def defineUsername(name):
+    return re.sub('[^a-zA-Z]+', '', name.replace(" ", "").upper())
+
 def readFromDatabase():
     mycursor.execute("SELECT * FROM results ORDER BY points DESC")
 
     for x in mycursor:
         print(x)
-    #Litt avhengig av hva slags format Nils ønsker på output.
-    # Vil nok ha en finere output her.  
 
-def checkWinner(player1, player2, result):
+#def checkWinner(player1, player2, result):
     #   writeToDatabase(winner)
     #  Spørs om vi skal ta med resultat for begge spillere, eller kun notere den som vinner. 
     #  Hvis vi skal ha med vinner og taper må database strukturen endres og poengsystemet endres.
-    print("k")
+    #print("k")
 
 
 def checkExistingUser(username):
@@ -61,7 +63,8 @@ def main():
     if("('results',)" not in str(tableList)):
         createTable()
 
-main()
+#print(defineUsername("Jacob Fredheim"))
+#main()
 #writeToDatabase("nils")
 #checkUsername("nils")
-readFromDatabase()
+#readFromDatabase()
