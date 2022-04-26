@@ -187,7 +187,10 @@ draw_lines()
 
 player = 1
 game_over = False
-clicked_last = sys.argv[1]
+if sys.argv[1] == "True" :
+	clicked_last =  True
+else: 
+	clicked_col = False
 
 # main loop
 while True:
