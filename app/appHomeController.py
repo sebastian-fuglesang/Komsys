@@ -1,3 +1,4 @@
+from subprocess import Popen
 from turtle import home
 import paho.mqtt.client as mqtt
 import logging
@@ -9,6 +10,7 @@ import webbrowser
 from stmpy import Machine, Driver
 import webbrowser
 import os
+from writeToDatabase import db
 
 #Kopierte kode fra app.py inn i appHomeController
 
@@ -88,6 +90,16 @@ class SuperAwesomeApp:
             self.app.setButtonBg("Tilgjengelig", "green")
             self.app.setButtonBg("Forlat samtale", "grey")
             self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
+
+
+    def getLeaderboard(self):
+        print("Called play game")
+        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/leaderboard.py']) 
+    
+    def playGame(self):
+        print("Called play game")
+        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/main.py', "False"])
+
         
 
     def on_connect(self, client, userdata, flags, rc):
@@ -104,6 +116,9 @@ class SuperAwesomeApp:
             self.app.setButtonBg("Nekt samtale", "red")
             self.app.setButtonBg("Utilgjengelig", "grey")
             homeController.stm.send('call_invite') #sender trigger call_invite for å endre tilstand til respond_to_call
+    
+    def start_gui(self):
+        self.app.go()
 
     def __init__(self):
         # get the logger object for the component
@@ -136,21 +151,33 @@ class SuperAwesomeApp:
         self.app.addButton("Aksepter samtale", self.acceptCall)
         self.app.addButton("Nekt samtale", self.refuseCall)
         self.app.addButton("Forlat samtale", self.leaveCall)
-
+        self.app.addButton("Spill", self.playGame)
+        self.app.addButton("Leaderboard", self.getLeaderboard)
+        
+        self.app.setButtonBg("Spill", "grey")
+        self.app.setButtonBg("Leaderboard", "grey")
         self.app.setButtonBg("Aksepter samtale", "grey")
         self.app.setButtonBg("Nekt samtale", "grey")
         self.app.setButtonBg("Tilgjengelig", "green")
         self.app.setButtonBg("Utilgjengelig", "grey")
         self.app.setButtonBg("Forlat samtale", "grey")
-
+        self.app.setButtonBg('Leaderboard', 'green')
         self.app.addLabel("STATUS", "STATUS: Utilgjengelig")
 
+        #leaderboard subwindow
+        self.app.startSubWindow('Leaderboard window', modal=True)
+        data = db.readFromDatabase()
+        #data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
+        #data = sorted(data, key = lambda x: x[1], reverse=True)
+        self.app.addTable('table', [['Name', 'Wins']])
+        self.app.addTableRows('table', data)
+
+        
         #self.app.go()
         #Kommenterte ut det ovenfor fordi jeg ønsker å starte gui etter state machinen er startet
 
     #Lagde egen funksjon for å starte gui   
-    def start_gui(self):
-        self.app.go()
+    
 
     def stop(self):
         """
