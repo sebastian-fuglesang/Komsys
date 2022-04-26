@@ -21,29 +21,11 @@ def writeToDatabase(username):
         mycursor.execute("INSERT INTO results (username, points) VALUES (%s, 1)",([username]))
         mydb.commit()
 
-def checkUsername(username):
-    mycursor.execute("SELECT username FROM results WHERE username = %s", ([username]))
-
-    if(mycursor.fetchone() == ((username,))):
-        print("this username is already in use")
-    else:
-        writeToDatabase(username)
-
-
-def defineUsername(name):
-    return re.sub('[^a-zA-Z]+', '', name.replace(" ", "").upper())
-
 def readFromDatabase():
     mycursor.execute("SELECT * FROM results ORDER BY points DESC")
 
     for x in mycursor:
         print(x)
-
-#def checkWinner(player1, player2, result):
-    #   writeToDatabase(winner)
-    #  Spørs om vi skal ta med resultat for begge spillere, eller kun notere den som vinner. 
-    #  Hvis vi skal ha med vinner og taper må database strukturen endres og poengsystemet endres.
-    #print("k")
 
 
 def checkExistingUser(username):
