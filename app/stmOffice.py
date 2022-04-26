@@ -2,8 +2,10 @@ import time
 from appJar import gui
 from stmpy import Machine, Driver
 from motionDetectorTumbsup import motion_detector
+from writeToDatabase import db
 import webbrowser
 import os
+import threading
 
 class OfficeController:
     """
@@ -15,18 +17,38 @@ class OfficeController:
     def create_GUI(self):
         self.app = gui()
         self.app.setOnTop()
-        self.app.startLabelFrame('Office controller')
+        #self.app.startLabelFrame('Office controller')
 
         def on_leave():
             os.system("taskkill /im chrome.exe /f")
             time.sleep(1)
             self.stm.send('leave_request')
+            #self.app.stopSubWindow('Leaderboard')
             self.app.stop()
             print('Leaving room...')
-        
+
+        def on_leaderboard():
+            self.app.showSubWindow('Leaderboard')
+
+
+        def on_close():
+            self.app.hideSubWindow('Leaderboard')
+ 
+
 
         self.app.addButton('Leave', on_leave)
+        self.app.addButton('See game leaderboard', on_leaderboard)
         self.app.setLocation(0, 200)
+        self.app.startSubWindow('Leaderboard', modal=True)
+        self.app.addTable('table', [['Name', 'Wins']])
+
+        self.app.addButton('Close', on_close)
+
+        data = db.readFromDatabase()
+        #data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
+        #data = sorted(data, key = lambda x: x[1], reverse=True)
+        self.app.addTableRows('table', data)
+
         self.app.go()
 
     def start_motion_detection(self):
@@ -40,12 +62,15 @@ class OfficeController:
             webbrowser.open_new('https://heroku-call-service.herokuapp.com/')
             self.stm.send('server_request_ok')
             time.sleep(0.5)
-            self.create_GUI()
+            th = threading.Thread(target=self.create_GUI())
+            th.start()
+            #self.create_GUI()
         except:
             self.stm.send('server_request_bad')
 
     def send_video_stream(self):
         print('Video ongoing...')
+
 
     def start_motiondetector(self):
         motion_detector()
@@ -121,8 +146,6 @@ if __name__ == "__main__":
     driver = Driver()
     driver.add_machine(stm)
     driver.start()
-
-    #officeController.create_GUI()
 
 
 
