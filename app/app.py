@@ -5,6 +5,8 @@ import json
 from appJar import gui
 import appStyle as style
 import webbrowser
+from subprocess import Popen
+
 
 # TODO: choose proper MQTT broker address
 MQTT_BROKER = 'mqtt.item.ntnu.no'
@@ -14,10 +16,15 @@ MQTT_PORT = 1883
 MQTT_TOPIC_INPUT = 'ttm4115/team07/mainApp'
 MQTT_TOPIC_OUTPUT = 'ttm4115/team07/mainApp'
 
+
 class SuperAwesomeApp:
     """
     The component to send voice commands.
     """
+    def playGame(self):
+        print("Called play game")
+        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/main.py'])
+
     def announceAvailable(self):
         print("hei hei jeg er tilgjengelig")
         self.publish_command("Available")
@@ -88,6 +95,7 @@ class SuperAwesomeApp:
         self.app.addButton('Utilgjengelig', self.announceUnavailable)
         self.app.addButton("Aksepter samtale", self.acceptCall)
         self.app.addButton("Nekt samtale", self.refuseCall )
+        self.app.addButton("Spill", self.playGame)
         self.app.setButtonBg("Aksepter samtale", "grey")
         self.app.setButtonBg("Nekt samtale", "grey")
         self.app.setButtonBg("Tilgjengelig", "grey")

@@ -6,7 +6,7 @@ import json
 import pygame, sys
 import numpy as np
 import re
-import winner
+#import winner
 
 MQTT_BROKER = 'mqtt.item.ntnu.no'
 MQTT_PORT = 1883
@@ -199,8 +199,8 @@ while True:
 			clicked_last = False
 
 			if check_win( player ):
-				th = threading.Thread(target=winner.winner, args=(player,))
-				th.start()
+				#th = threading.Thread(target=winner.winner, args=(player,))
+				#th.start()
 				game_over = True
 			player = player % 2 + 1
 
@@ -234,8 +234,8 @@ while True:
 
 				
 				if check_win( player ):
-					th = threading.Thread(target=winner.winner, args=(player,))
-					th.start()
+					#th = threading.Thread(target=winner.winner, args=(player,))
+					#th.start()
 					game_over = True
 				player = player % 2 + 1
 
