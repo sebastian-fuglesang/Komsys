@@ -11,7 +11,7 @@ from stmpy import Machine, Driver
 import webbrowser
 import os
 from subprocess import Popen
-#from writeToDatabase import db
+from writeToDatabase import db
 
 #Kopierte kode fra app.py inn i appHomeController
 
@@ -164,6 +164,15 @@ class SuperAwesomeApp:
         self.app.setButtonBg("Forlat samtale", "grey")
         self.app.setButtonBg('Leaderboard', 'green')
         self.app.addLabel("STATUS", "STATUS: Utilgjengelig")
+
+        #leaderboard subwindow
+        self.app.startSubWindow('Leaderboard window', modal=True)
+        data = db.readFromDatabase()
+        #data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
+        #data = sorted(data, key = lambda x: x[1], reverse=True)
+        self.app.addTable('table', [['Name', 'Wins']])
+        self.app.addTableRows('table', data)
+
         
         #self.app.go()
         #Kommenterte ut det ovenfor fordi jeg ønsker å starte gui etter state machinen er startet
