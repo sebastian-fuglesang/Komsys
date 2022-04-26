@@ -9,7 +9,7 @@ import webbrowser
 from stmpy import Machine, Driver
 import webbrowser
 import os
-#from writeToDatabase import db
+from writeToDatabase import db
 
 #Kopierte kode fra app.py inn i appHomeController
 
@@ -154,9 +154,9 @@ class SuperAwesomeApp:
 
         #leaderboard subwindow
         self.app.startSubWindow('Leaderboard window', modal=True)
-        #data = db.readFromDatabase()
-        data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
-        data = sorted(data, key = lambda x: x[1], reverse=True)
+        data = db.readFromDatabase()
+        #data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
+        #data = sorted(data, key = lambda x: x[1], reverse=True)
         self.app.addTable('table', [['Name', 'Wins']])
         self.app.addTableRows('table', data)
 
