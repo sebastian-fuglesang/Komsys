@@ -1,3 +1,4 @@
+from subprocess import Popen
 from turtle import home
 import paho.mqtt.client as mqtt
 import logging
@@ -91,8 +92,14 @@ class SuperAwesomeApp:
             self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
 
 
-    def on_leaderboard(self):
-        self.app.showSubWindow('Leaderboard window')
+    def getLeaderboard(self):
+        print("Called play game")
+        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/leaderboard.py']) 
+    
+    def playGame(self):
+        print("Called play game")
+        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/main.py', "False"])
+
         
 
     def on_connect(self, client, userdata, flags, rc):
@@ -109,6 +116,9 @@ class SuperAwesomeApp:
             self.app.setButtonBg("Nekt samtale", "red")
             self.app.setButtonBg("Utilgjengelig", "grey")
             homeController.stm.send('call_invite') #sender trigger call_invite for å endre tilstand til respond_to_call
+    
+    def start_gui(self):
+        self.app.go()
 
     def __init__(self):
         # get the logger object for the component
@@ -136,14 +146,16 @@ class SuperAwesomeApp:
     def create_gui(self):
         self.app=gui(**style.body)
         self.app.addLabel("title", "Welcome to Super Awesome App")
-        self.app.addButton('Leaderboard', self.on_leaderboard)
         self.app.addButton('Tilgjengelig', self.announceAvailable)
         self.app.addButton('Utilgjengelig', self.announceUnavailable)
         self.app.addButton("Aksepter samtale", self.acceptCall)
         self.app.addButton("Nekt samtale", self.refuseCall)
         self.app.addButton("Forlat samtale", self.leaveCall)
-
-
+        self.app.addButton("Spill", self.playGame)
+        self.app.addButton("Leaderboard", self.getLeaderboard)
+        
+        self.app.setButtonBg("Spill", "grey")
+        self.app.setButtonBg("Leaderboard", "grey")
         self.app.setButtonBg("Aksepter samtale", "grey")
         self.app.setButtonBg("Nekt samtale", "grey")
         self.app.setButtonBg("Tilgjengelig", "green")
@@ -161,13 +173,11 @@ class SuperAwesomeApp:
         self.app.addTableRows('table', data)
 
         
-
         #self.app.go()
         #Kommenterte ut det ovenfor fordi jeg ønsker å starte gui etter state machinen er startet
 
     #Lagde egen funksjon for å starte gui   
-    def start_gui(self):
-        self.app.go()
+    
 
     def stop(self):
         """
