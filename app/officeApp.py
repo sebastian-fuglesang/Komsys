@@ -5,8 +5,6 @@ import json
 from appJar import gui
 import appStyle as style
 import webbrowser
-from subprocess import Popen
-
 
 # TODO: choose proper MQTT broker address
 MQTT_BROKER = 'mqtt.item.ntnu.no'
@@ -16,15 +14,10 @@ MQTT_PORT = 1883
 MQTT_TOPIC_INPUT = 'ttm4115/team07/mainApp'
 MQTT_TOPIC_OUTPUT = 'ttm4115/team07/mainApp'
 
-
 class SuperAwesomeApp:
     """
     The component to send voice commands.
     """
-    def playGame(self):
-        print("Called play game")
-        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/main.py'])
-
     def announceAvailable(self):
         print("hei hei jeg er tilgjengelig")
         self.publish_command("Available")
@@ -95,27 +88,16 @@ class SuperAwesomeApp:
         self.app.addButton('Utilgjengelig', self.announceUnavailable)
         self.app.addButton("Aksepter samtale", self.acceptCall)
         self.app.addButton("Nekt samtale", self.refuseCall )
-        self.app.addButton("Spill", self.playGame)
         self.app.setButtonBg("Aksepter samtale", "grey")
         self.app.setButtonBg("Nekt samtale", "grey")
         self.app.setButtonBg("Tilgjengelig", "grey")
         self.app.setButtonBg("Utilgjengelig", "grey")
 
-
         self.app.go()
 
     def stop(self):
-        """
-        Stop the component.
-        """
-        # stop the MQTT client
         self.mqtt_client.loop_stop()
 
-
-# logging.DEBUG: Most fine-grained logging, printing everything
-# logging.INFO:  Only the most important informational log items
-# logging.WARN:  Show only warnings and errors.
-# logging.ERROR: Show only error messages.
 debug_level = logging.DEBUG
 logger = logging.getLogger(__name__)
 logger.setLevel(debug_level)
