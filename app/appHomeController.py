@@ -10,6 +10,7 @@ import webbrowser
 from stmpy import Machine, Driver
 import webbrowser
 import os
+from subprocess import Popen
 #from writeToDatabase import db
 
 #Kopierte kode fra app.py inn i appHomeController
