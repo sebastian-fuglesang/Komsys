@@ -1,3 +1,4 @@
+from turtle import home
 import paho.mqtt.client as mqtt
 import logging
 from threading import Thread
@@ -6,6 +7,8 @@ from appJar import gui
 import appStyle as style
 import webbrowser
 from stmpy import Machine, Driver
+import webbrowser
+import os
 
 #Kopierte kode fra app.py inn i appHomeController
 
@@ -26,11 +29,19 @@ class SuperAwesomeApp:
 
     def announceAvailable(self):
         print("hei hei jeg er tilgjengelig")
+        self.app.setButtonBg("Tilgjengelig", "grey")
+        self.app.setButtonBg("Utilgjengelig", "green")
+        self.app.setLabel("STATUS", "STATUS: Tilgjengelig")
+        self.mqtt_client.subscribe("ttm4115/team07/calls")  # subscribe via MQTT I'm available
         homeController.announce_available() #kaller announce_available i homeController når en trykker på knappen tilgjengelig
 
     def announceUnavailable(self):
         self.publish_command("Unavailable")
         print("hei hei jeg er ikke tilgjengelig")
+        self.app.setButtonBg("Tilgjengelig", "green")
+        self.app.setButtonBg("Utilgjengelig", "grey")
+        self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
+        self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm unavailable
         homeController.announce_unavailable() #kaller announce_unavailable i homeController når en trykker på knappen utilgjengelig
 
     def publish_command(self, command):
@@ -41,26 +52,43 @@ class SuperAwesomeApp:
     def acceptCall(self):
         #An variable where True is accept call and False is refuse call
         global videoResponse
-        if self.getting_called:
+        if self.getting_called and homeController.stm.state == 'respondToCall':
             self.getting_called=False
             #Global variable to be used in homeController state machine
             videoResponse=True
             print("Videoresponse true")
+            homeController.respond_to_call() #kaller homeController sin funksjon respond_to_call som trigger tilstandsendring
+            webbrowser.open_new(
+                'https://heroku-call-service.herokuapp.com/' + self.most_recent_room[2:-1])
             self.app.setButtonBg("Aksepter samtale", "grey")
             self.app.setButtonBg("Nekt samtale", "grey")
-            homeController.respond_to_call() #kaller homeController sin funksjon respond_to_call som trigger tilstandsendring
-            webbrowser.get('/usr/bin/google-chrome %s &').open_new(
-                'https://test-of-heroku2222.herokuapp.com/' + self.most_recent_room[2:-1])
+            self.app.setButtonBg("Utilgjengelig", "grey")
+            self.app.setButtonBg("Forlat samtale", "green")
+            self.app.setLabel("STATUS", "STATUS: Active Video")
+            self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm in a video call
+                
 
     def refuseCall(self):
         global videoResponse
-        if self.getting_called:
+        if self.getting_called and homeController.stm.state == 'respondToCall':
             self.getting_called=False
             # Global variable to be used in homeController state machine
             videoResponse=False
             self.app.setButtonBg("Aksepter samtale", "grey")
             self.app.setButtonBg("Nekt samtale", "grey")
+            self.app.setButtonBg("Tilgjengelig", "green")
+            self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
+            self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm not accepting call
             homeController.respond_to_call() #kaller homeController sin funksjon respond_to_call som trigger tilstandsendring
+
+    def leaveCall(self):
+        if homeController.stm.state == 'callActive':
+            stm_homeController.send('leave')
+            print("Forlater videosamtalen...")
+            self.app.setButtonBg("Tilgjengelig", "green")
+            self.app.setButtonBg("Forlat samtale", "grey")
+            self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
+        
 
     def on_connect(self, client, userdata, flags, rc):
         # we just log that we are connected
@@ -69,11 +97,12 @@ class SuperAwesomeApp:
     def on_message(self, client, userdata, msg):
         print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
         print(msg.payload)
-        if (msg.topic == "ttm4115/team07/calls"):
+        if (msg.topic == "ttm4115/team07/calls" and homeController.stm.state == 'idle'):
             self.most_recent_room=str(msg.payload)
             self.getting_called=True
             self.app.setButtonBg("Aksepter samtale", "green")
             self.app.setButtonBg("Nekt samtale", "red")
+            self.app.setButtonBg("Utilgjengelig", "grey")
             homeController.stm.send('call_invite') #sender trigger call_invite for å endre tilstand til respond_to_call
 
     def __init__(self):
@@ -93,7 +122,7 @@ class SuperAwesomeApp:
         # Connect to the broker
         self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
         # Subscribe to administrative topics
-        self.mqtt_client.subscribe("ttm4115/team07/calls")
+        self.mqtt_client.unsubscribe("ttm4115/team07/calls")
         # start the internal loop to process MQTT messages
         self.mqtt_client.loop_start()
 
@@ -106,10 +135,15 @@ class SuperAwesomeApp:
         self.app.addButton('Utilgjengelig', self.announceUnavailable)
         self.app.addButton("Aksepter samtale", self.acceptCall)
         self.app.addButton("Nekt samtale", self.refuseCall)
+        self.app.addButton("Forlat samtale", self.leaveCall)
+
         self.app.setButtonBg("Aksepter samtale", "grey")
         self.app.setButtonBg("Nekt samtale", "grey")
-        self.app.setButtonBg("Tilgjengelig", "grey")
+        self.app.setButtonBg("Tilgjengelig", "green")
         self.app.setButtonBg("Utilgjengelig", "grey")
+        self.app.setButtonBg("Forlat samtale", "grey")
+
+        self.app.addLabel("STATUS", "STATUS: Utilgjengelig")
 
         #self.app.go()
         #Kommenterte ut det ovenfor fordi jeg ønsker å starte gui etter state machinen er startet
@@ -134,13 +168,11 @@ class HomeController:
     def announce_available(self):
         print('Available for Video call')
         print(self.stm.driver.print_status())
-        t.publish_command("Available") #publiserer available via MQTT
 
 
     def announce_unavailable(self):
         print('Unavailable for Video call')
         print(self.stm.driver.print_status())
-        t.publish_command("Unavailable") #publiserer unavailable via MQTT
 
     def respond_to_call(self):
         print('In Response to call state')
@@ -152,6 +184,13 @@ class HomeController:
         print('Start Video stream')
         print(self.stm.driver.print_status())
 
+    
+    def stop_stream(self):
+        print("Stop the video stream")
+        os.system("taskkill /im chrome.exe /f") 
+        print(self.stm.driver.print_status())
+    
+
     # Code for the compound transition:
     def respond_call_transition(self):
         if videoResponse==True:
@@ -159,29 +198,13 @@ class HomeController:
         else:
             return 'idle'
 
-#Kun for testing av to state machines i samme koden
-class GameController:
-
-    def init(self):
-        print('Start Game')
-        print(self.stm.driver.print_status())
-
-    def no_game(self):
-        print('Not any game ongoing')
-        print(self.stm.driver.print_status())
-
-    def status_game(self):
-        print('Game ongoing')
-        print(self.stm.driver.print_status())
-
 
 if __name__ == "__main__":
     driver = Driver()
 
     #Make an object of HomeController() and GameController()
     homeController = HomeController()
-    #GameController is just for testing
-    gameController = GameController()
+
 
     videoResponse = False 
 
@@ -190,8 +213,7 @@ if __name__ == "__main__":
     t1 = {'trigger':'call_invite', 'source':'idle', 'target':'respondToCall'}
     t2 = {'trigger':'call_response', 'source':'respondToCall', 'function':homeController.respond_call_transition}
     t3 = {'trigger':'play_game', 'source':'callActive', 'target':'callActive'}
-    t4 = {'trigger':'leave', 'source':'callActive', 'target':'idle', 'effect':'stop_stream'}
-    t5 = {'trigger':'t', 'source':'callActive', 'target':'idle', 'effect':'stop_stream'}
+    t4 = {'trigger':'leave', 'source':'callActive', 'target':'idle', 'effect':'stop_stream()'}
 
     # We declare dicts for the homeController states
     initial = {'name': 'initial',
@@ -208,32 +230,12 @@ if __name__ == "__main__":
 
 
     #Make state machines of homeController:
-    stm_homeController = Machine(transitions=[t0, t1, t2, t3, t4, t5], obj=homeController, states=[idle,respondToCall,callActive], name='stm_homeController')
+    stm_homeController = Machine(transitions=[t0, t1, t2, t3, t4], obj=homeController, states=[idle,respondToCall,callActive], name='stm_homeController')
     homeController.stm = stm_homeController
 
     driver.add_machine(stm_homeController)
 
-    #gameController Transitions:
-    t0 = {'source':'initial',  'target':'no_game'}
-    t1 = {'trigger':'start_game', 'source':'no_game', 'target':'started_game'}
-    t2 = {'trigger':'end_game', 'source':'started_game', 'target':'no_game'}
 
-    # We declare dicts for the gameController states
-    no_game = {'name': 'no_game', 'entry': 'no_game()'}
-    started_game = {'name': 'started_game', 'entry': 'status_game()'}
-
-    #Make state machines of homeController:
-    stm_gameController = Machine(transitions=[t0, t1, t2], obj=gameController, states=[no_game,started_game], name='stm_gameController')
-    gameController.stm = stm_gameController
-
-    driver.add_machine(stm_gameController)
-
-
-
-    # logging.DEBUG: Most fine-grained logging, printing everything
-    # logging.INFO:  Only the most important informational log items
-    # logging.WARN:  Show only warnings and errors.
-    # logging.ERROR: Show only error messages.
     debug_level=logging.DEBUG
     logger=logging.getLogger(__name__)
     logger.setLevel(debug_level)
@@ -245,8 +247,6 @@ if __name__ == "__main__":
 
     t=SuperAwesomeApp()
 
-
-    gameController.mqtt_client = t.mqtt_client 
     t.mqtt_client.stm_driver = driver
 
 
