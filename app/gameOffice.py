@@ -1,4 +1,5 @@
 from socket import timeout
+from subprocess import Popen
 import paho.mqtt.client as mqtt
 import threading
 import logging
@@ -6,6 +7,7 @@ import json
 import pygame, sys
 import numpy as np
 import re
+import sys
 import winner
 
 MQTT_BROKER = 'mqtt.item.ntnu.no'
@@ -13,17 +15,23 @@ MQTT_PORT = 1883
 
 MQTT_TOPIC = 'ttm4115/team07/gameLobby'
 MQTT_MOVES = [9,9,9]
+
 def on_connect(client, userdata, flags, rc):
 	print("Connection returned result: " + str(rc) )
 
 def on_message(client, userdata, msg):
-	#print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
-	print(msg.topic+" "+str(msg.payload))
-	#Extract numbers from string
 	data = str(msg.payload)
-	mylist = re.findall(r'\d+', data)
 	global MQTT_MOVES 
-	MQTT_MOVES= mylist
+	#Restart game if restartrequest is sent
+	if data.count("restart") == 1:
+		global restartrequest
+		restartrequest = True
+		MQTT_MOVES = [9,9,9]
+	#Extract numbers from string
+	else:
+		mylist = re.findall(r'\d+', data)
+		MQTT_MOVES= mylist
+
 
 mqtt_client = mqtt.Client()
 # callback methods
@@ -33,7 +41,6 @@ mqtt_client.on_message = on_message
 mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
 #Subscribe to administrative topics
 # start the internal loop to process MQTT messages
-
 mqtt_client.subscribe(MQTT_TOPIC)
 mqtt_client.loop_start()
 
@@ -102,46 +109,24 @@ def is_board_full():
 def check_win(player):
 	for col in range(BOARD_COLS):
 		if board[0][col] == player and board[1][col] == player and board[2][col] == player:
-			print_winner(player)
 			draw_vertical_winning_line(col, player)
 			return True
 
 	for row in range(BOARD_ROWS):
 		if board[row][0] == player and board[row][1] == player and board[row][2] == player:
-			print_winner(player)
 			draw_horizontal_winning_line(row, player)
 			return True
 
 	#Diagonal win:
 	if board[2][0] == player and board[1][1] == player and board[0][2] == player:
-		print_winner(player)
 		draw_asc_diagonal(player)
 		return True
 
 	if board[0][0] == player and board[1][1] == player and board[2][2] == player:
-		print_winner(player)
 		draw_desc_diagonal(player)
 		return True
 
 	return False
-
-"""
-Maybe use this function to send to mqtt.
-Ideas:
--At the beginning, define through mqtt who's player 1 & 2, from each round publish winner 1 || 2,  through mqtt add up score.
--Or keep track of the score locally, at the end of the dialogue publish the final results through mqtt, which forwards it to leaderboard database?
--Or maybe find a way to track score different than 1 || 2, by adding names. ( Can take a while)
-"""
-def print_winner(player):
-	#data ={
-	#		'winner' : player
-	#		}
-	#payload = json.dumps(data)
-	#mqtt_client.publish(MQTT_TOPIC, payload=payload , qos=2)
-	if player==1:
-		print("Player 1 (O) has won the game")
-	else:
-		print("Player 2 (X) has won the game")
 
 
 def draw_vertical_winning_line(col, player):
@@ -180,16 +165,31 @@ def draw_desc_diagonal(player):
 
 	pygame.draw.line( screen, color, (15, 15), (WIDTH - 15, HEIGHT - 15), WIN_LINE_WIDTH )
 
+def restart():
+	screen.fill( BG_COLOR )
+	draw_lines()
+	for row in range(BOARD_ROWS):
+		for col in range(BOARD_COLS):
+			board[row][col] = 0
 
 
 draw_lines()
 
 player = 1
 game_over = False
-clicked_last = False
+clicked_last = True
+i_am_player_no = 2
+restartrequest = False
 
 # main loop
 while True:
+	
+	if restartrequest :
+		restart()
+		player = 1
+		game_over = False
+		clicked_last = True
+		restartrequest = False
 	
 	#Gets the next move through MQTT - User cant play before mqtt move has been made.
 	if clicked_last and MQTT_MOVES[0] != 9:
@@ -199,10 +199,9 @@ while True:
 			clicked_last = False
 
 			if check_win( player ):
-				#th = threading.Thread(target=winner.winner, args=(player,))
-				#th.start()
 				game_over = True
 			player = player % 2 + 1
+	
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -220,7 +219,6 @@ while True:
 
 				mark_square( clicked_row, clicked_col, player )
 				
-				# Send over mqtt clicked_row, clicked_col, player (?)
 				data ={
 					'row' : clicked_row,
 					'col' : clicked_col,
@@ -234,15 +232,21 @@ while True:
 
 				
 				if check_win( player ):
-					#th = threading.Thread(target=winner.winner, args=(player,))
-					#th.start()
+					if player == i_am_player_no:
+						th = threading.Thread(target=winner.winner, args=(player,))
+						th.start()
 					game_over = True
 				player = player % 2 + 1
-
-
-		# if not clicked_last:
-		# 	print("Now listening?")
-		# 	mqtt_client.subscribe(MQTT_TOPIC)
+		
+		# press "r" to restart game.
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_r:
+				mqtt_client.publish(MQTT_TOPIC, "restart", qos=2)
+				restart()
+				player = 1
+				game_over = False
+				clicked_last = False
+				i_am_player_no = 2
 
 
 	pygame.display.update()

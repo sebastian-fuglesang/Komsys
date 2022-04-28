@@ -99,7 +99,7 @@ class SuperAwesomeApp:
     
     def playGame(self):
         print("Called play game")
-        Popen(['python3', '/home/sebastfu/komsys/Komsys/app/main.py', "False"])
+        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\gameHome.py'])
 
         
 

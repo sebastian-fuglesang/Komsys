@@ -3,7 +3,7 @@ import time
 from appJar import gui
 from stmpy import Machine, Driver
 from motionDetectorTumbsup import motion_detector
-from writeToDatabase import db
+from gameDBService import db
 from subprocess import Popen 
 import webbrowser
 import os
