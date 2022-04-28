@@ -20,15 +20,14 @@ def on_connect(client, userdata, flags, rc):
 	print("Connection returned result: " + str(rc) )
 
 def on_message(client, userdata, msg):
-	#print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
-	print(msg.topic+" "+str(msg.payload))
-	#Extract numbers from string
 	data = str(msg.payload)
 	global MQTT_MOVES 
+	#Restart if restartrequest is sent
 	if data.count("restart") == 1:
 		global restartrequest
 		restartrequest = True
 		MQTT_MOVES = [9,9,9]
+    #Extract numbers from string    
 	else:
 		mylist = re.findall(r'\d+', data)
 		MQTT_MOVES= mylist
@@ -111,46 +110,24 @@ def is_board_full():
 def check_win(player):
 	for col in range(BOARD_COLS):
 		if board[0][col] == player and board[1][col] == player and board[2][col] == player:
-			print_winner(player)
 			draw_vertical_winning_line(col, player)
 			return True
 
 	for row in range(BOARD_ROWS):
 		if board[row][0] == player and board[row][1] == player and board[row][2] == player:
-			print_winner(player)
 			draw_horizontal_winning_line(row, player)
 			return True
 
 	#Diagonal win:
 	if board[2][0] == player and board[1][1] == player and board[0][2] == player:
-		print_winner(player)
 		draw_asc_diagonal(player)
 		return True
 
 	if board[0][0] == player and board[1][1] == player and board[2][2] == player:
-		print_winner(player)
 		draw_desc_diagonal(player)
 		return True
 
 	return False
-
-"""
-Maybe use this function to send to mqtt.
-Ideas:
--At the beginning, define through mqtt who's player 1 & 2, from each round publish winner 1 || 2,  through mqtt add up score.
--Or keep track of the score locally, at the end of the dialogue publish the final results through mqtt, which forwards it to leaderboard database?
--Or maybe find a way to track score different than 1 || 2, by adding names. ( Can take a while)
-"""
-def print_winner(player):
-	#data ={
-	#		'winner' : player
-	#		}
-	#payload = json.dumps(data)
-	#mqtt_client.publish(MQTT_TOPIC, payload=payload , qos=2)
-	if player==1:
-		print("Player 1 (O) has won the game")
-	else:
-		print("Player 2 (X) has won the game")
 
 
 def draw_vertical_winning_line(col, player):
@@ -213,7 +190,6 @@ while True:
 		player = 1
 		game_over = False
 		clicked_last = False
-		i_am_player_no = 1
 		restartrequest = False
 	
 	#Gets the next move through MQTT - User cant play before mqtt move has been made.
@@ -244,7 +220,6 @@ while True:
 
 				mark_square( clicked_row, clicked_col, player )
 				
-				# Send over mqtt clicked_row, clicked_col, player (?)
 				data ={
 					'row' : clicked_row,
 					'col' : clicked_col,
@@ -267,22 +242,12 @@ while True:
 		# press "r" to restart game.
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_r:
-				"""
-				Publish "restart"
-				"""
-				print("restarting..")
 				mqtt_client.publish(MQTT_TOPIC, "restart", qos=2)
 				restart()
 				player = 1
 				game_over = False
 				clicked_last = False
 				i_am_player_no = 2
-
-
-		# if not clicked_last:
-		# 	print("Now listening?")
-		# 	mqtt_client.subscribe(MQTT_TOPIC)
-
 
 	pygame.display.update()
 	#https://github.com/KenObie/mqtt-iot see for inspiration
