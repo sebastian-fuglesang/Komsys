@@ -6,7 +6,7 @@ import json
 import pygame, sys
 import numpy as np
 import re
-#import winner
+import winner
 
 MQTT_BROKER = 'mqtt.item.ntnu.no'
 MQTT_PORT = 1883

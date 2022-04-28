@@ -2,7 +2,7 @@ import time
 from appJar import gui
 from stmpy import Machine, Driver
 from motionDetectorTumbsup import motion_detector
-from writeToDatabase import db
+from gameDBService import db
 import webbrowser
 import os
 import threading
