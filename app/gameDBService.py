@@ -36,12 +36,6 @@ class db:
         #Litt avhengig av hva slags format Nils ønsker på output.
         # Vil nok ha en finere output her.  
 
-    def checkWinner(player1, player2, result):
-        #   writeToDatabase(winner)
-        #  Spørs om vi skal ta med resultat for begge spillere, eller kun notere den som vinner. 
-        #  Hvis vi skal ha med vinner og taper må database strukturen endres og poengsystemet endres.
-        print("k")
-
 
     def checkExistingUser(username):
         mycursor.execute("SELECT username FROM results WHERE username = %s", ([username]))
