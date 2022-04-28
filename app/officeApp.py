@@ -1,110 +1,149 @@
-import paho.mqtt.client as mqtt
-import logging
-from threading import Thread
-import json
+import sys
+import time
 from appJar import gui
-import appStyle as style
+from stmpy import Machine, Driver
+from motionDetectorTumbsup import motion_detector
+from writeToDatabase import db
+from subprocess import Popen 
 import webbrowser
+import os
+import threading
 
-# TODO: choose proper MQTT broker address
-MQTT_BROKER = 'mqtt.item.ntnu.no'
-MQTT_PORT = 1883
-
-# TODO: choose proper topics for communication
-MQTT_TOPIC_INPUT = 'ttm4115/team07/mainApp'
-MQTT_TOPIC_OUTPUT = 'ttm4115/team07/mainApp'
-
-class SuperAwesomeApp:
+class OfficeController:
     """
-    The component to send voice commands.
+    State machine for the office controller
     """
-    def announceAvailable(self):
-        print("hei hei jeg er tilgjengelig")
-        self.publish_command("Available")
+    def __init__(self, component):
+        self.component = component
 
-    def announceUnavailable(self):
-        self.publish_command("Unavailable")
-        print("hei hei jeg er ikke tilgjengelig")
 
-    def publish_command(self,command):
-        payload = json.dumps(command)
-        self._logger.info(command)
-        self.mqtt_client.publish(MQTT_TOPIC_INPUT, payload=payload, qos=2)
+    #Creates a simple GUI for leaving, see leaderboard and playing game
+    def create_GUI(self):
+        self.app = gui()
+        self.app.setOnTop()
 
-    def acceptCall(self):
-        if self.getting_called:
-            self.getting_called = False
-            self.app.setButtonBg("Aksepter samtale", "grey")
-            self.app.setButtonBg("Nekt samtale", "grey")
-            webbrowser.get('/usr/bin/google-chrome %s &').open_new('https://heroku-call-service.herokuapp.com/' + self.most_recent_room[2:-1])
+        def on_leave():
+            os.system("taskkill /im chrome.exe /f")
+            time.sleep(1)
+            self.stm.send('leave_request')
+            self.app.stop()  
+            print('Leaving room...')
 
-    def refuseCall(self):
-        if self.getting_called:
-            self.getting_called = False
-            self.app.setButtonBg("Aksepter samtale", "grey")
-            self.app.setButtonBg("Nekt samtale", "grey")
-        
-    def on_connect(self, client, userdata, flags, rc):
-        # we just log that we are connected
-        self._logger.debug('MQTT connected to {}'.format(client))
+        def on_leaderboard():
+            self.app.showSubWindow('Leaderboard')
 
-    def on_message(self, client, userdata, msg):
-        print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
-        print(msg.payload)
-        if (msg.topic == "ttm4115/team07/calls"):
-            self.most_recent_room = str(msg.payload)
-            self.getting_called = True
-            self.app.setButtonBg("Aksepter samtale", "green")
-            self.app.setButtonBg("Nekt samtale", "red")
 
-    def __init__(self):
-        # get the logger object for the component
-        self._logger = logging.getLogger(__name__)
-        print('logging under name {}.'.format(__name__))
-        self._logger.info('Starting Component')
-        self.most_recent_room = ""
-        self.getting_called = False
+        def on_close():
+            self.app.hideSubWindow('Leaderboard')
+ 
+        def on_game():
+            Popen(['py', r'C:\Skole\2022Vår\TTM4115 - Design\Komsys\app\main.py', 'True'])
 
-        # create a new MQTT client
-        self._logger.debug('Connecting to MQTT broker {} at port {}'.format(MQTT_BROKER, MQTT_PORT))
-        self.mqtt_client = mqtt.Client()
-        # callback methods
-        self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_message = self.on_message
-        # Connect to the broker
-        self.mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
-        #Subscribe to administrative topics
-        self.mqtt_client.subscribe("ttm4115/team07/calls")
-        # start the internal loop to process MQTT messages
-        self.mqtt_client.loop_start()
+        self.app.addButton('Leave', on_leave)
+        self.app.addButton('See game leaderboard', on_leaderboard)
+        self.app.addButton('Spill', on_game)
+        self.app.setLocation(0, 200)
+        self.app.startSubWindow('Leaderboard', modal=True)
+        self.app.addTable('table', [['Name', 'Wins']])
 
-        self.create_gui()
-    
+        self.app.addButton('Close', on_close)
 
-    def create_gui(self):
-        self.app = gui(**style.body)
-        self.app.addLabel("title", "Welcome to Super Awesome App")
-        self.app.addButton('Tilgjengelig', self.announceAvailable)
-        self.app.addButton('Utilgjengelig', self.announceUnavailable)
-        self.app.addButton("Aksepter samtale", self.acceptCall)
-        self.app.addButton("Nekt samtale", self.refuseCall )
-        self.app.setButtonBg("Aksepter samtale", "grey")
-        self.app.setButtonBg("Nekt samtale", "grey")
-        self.app.setButtonBg("Tilgjengelig", "grey")
-        self.app.setButtonBg("Utilgjengelig", "grey")
+        data = db.readFromDatabase()
+        self.app.addTableRows('table', data)
 
         self.app.go()
 
-    def stop(self):
-        self.mqtt_client.loop_stop()
+    def start_motion_detection(self):
+        print('Motion detection started, waiting for motion...')
 
-debug_level = logging.DEBUG
-logger = logging.getLogger(__name__)
-logger.setLevel(debug_level)
-ch = logging.StreamHandler()
-ch.setLevel(debug_level)
-formatter = logging.Formatter('%(asctime)s - %(name)-12s - %(levelname)-8s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+    def stop_motion_detection(self):
+        print('Motion detected...')
 
-t = SuperAwesomeApp()
+    def request_room(self):
+        try:
+            webbrowser.open_new('https://heroku-call-service.herokuapp.com/')
+            self.stm.send('server_request_ok')
+            time.sleep(0.5)
+            th = threading.Thread(target=self.create_GUI())
+            th.start()
+        except:
+            self.stm.send('server_request_bad')
+
+    def send_video_stream(self):
+        print('Video ongoing...')
+
+    #Starts motion detector
+    def start_motiondetector(self):
+        motion_detector()
+        self.stm.send('motion')
+
+
+if __name__ == "__main__":
+    officeController = OfficeController(None)
+
+    t0 = {
+        'source': 'initial',
+        'target': 'idle'
+    }
+
+    #motion detected, initates call
+    t1 = {
+        'trigger': 'motion',
+        'source': 'idle',
+        'target': 'init_call'
+    }
+
+    #server request ok, videoroom ready and call active
+    t2 = {
+        'trigger': 'server_request_ok',
+        'source': 'init_call',
+        'target': 'call_active'
+    }
+
+    #server request fails, user sent back to idle
+    t3 = {
+        'trigger': 'server_request_bad',
+        'source': 'init_call',
+        'target': 'idle'
+    }
+
+
+    #user leaves, user is sent back to idle
+    t4 = {
+        'trigger': 'leave_request',
+        'source': 'call_active',
+        'target': 'idle'
+    }
+
+    #states
+
+    idle = {
+        'name': 'idle', 
+        'entry': 'start_motiondetector',
+        'exit': 'stop_motion_detection'
+    }
+
+    init_call = {
+        'name': 'init_call',
+        'entry': 'request_room'
+    }
+
+    call_active = {
+        'name': 'call_active',
+        'entry': 'send_video_stream'
+    }
+
+
+    stm = Machine(
+        name='stm',
+        transitions=[t0, t1, t2, t3, t4],
+        obj=officeController,
+        states=[idle, init_call, call_active]
+    )
+
+    officeController.stm = stm
+
+
+    driver = Driver()
+    driver.add_machine(stm)
+    driver.start()
