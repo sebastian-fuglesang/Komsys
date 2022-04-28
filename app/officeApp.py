@@ -1,8 +1,10 @@
+import sys
 import time
 from appJar import gui
 from stmpy import Machine, Driver
 from motionDetectorTumbsup import motion_detector
-from gameDBService import db
+from writeToDatabase import db
+from subprocess import Popen 
 import webbrowser
 import os
 import threading
@@ -14,17 +16,17 @@ class OfficeController:
     def __init__(self, component):
         self.component = component
 
+
+    #Creates a simple GUI for leaving, see leaderboard and playing game
     def create_GUI(self):
         self.app = gui()
         self.app.setOnTop()
-        #self.app.startLabelFrame('Office controller')
 
         def on_leave():
             os.system("taskkill /im chrome.exe /f")
             time.sleep(1)
             self.stm.send('leave_request')
-            #self.app.stopSubWindow('Leaderboard')
-            self.app.stop()
+            self.app.stop()  
             print('Leaving room...')
 
         def on_leaderboard():
@@ -34,10 +36,12 @@ class OfficeController:
         def on_close():
             self.app.hideSubWindow('Leaderboard')
  
-
+        def on_game():
+            Popen(['py', r'C:\Skole\2022Vår\TTM4115 - Design\Komsys\app\main.py', 'True'])
 
         self.app.addButton('Leave', on_leave)
         self.app.addButton('See game leaderboard', on_leaderboard)
+        self.app.addButton('Spill', on_game)
         self.app.setLocation(0, 200)
         self.app.startSubWindow('Leaderboard', modal=True)
         self.app.addTable('table', [['Name', 'Wins']])
@@ -45,8 +49,6 @@ class OfficeController:
         self.app.addButton('Close', on_close)
 
         data = db.readFromDatabase()
-        #data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
-        #data = sorted(data, key = lambda x: x[1], reverse=True)
         self.app.addTableRows('table', data)
 
         self.app.go()
@@ -64,14 +66,13 @@ class OfficeController:
             time.sleep(0.5)
             th = threading.Thread(target=self.create_GUI())
             th.start()
-            #self.create_GUI()
         except:
             self.stm.send('server_request_bad')
 
     def send_video_stream(self):
         print('Video ongoing...')
 
-
+    #Starts motion detector
     def start_motiondetector(self):
         motion_detector()
         self.stm.send('motion')
@@ -146,6 +147,3 @@ if __name__ == "__main__":
     driver = Driver()
     driver.add_machine(stm)
     driver.start()
-
-
-

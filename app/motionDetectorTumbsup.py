@@ -12,13 +12,11 @@ mpHands = mp.solutions.hands
 hands = mpHands.Hands(max_num_hands=1, min_detection_confidence=0.7)
 mpDraw = mp.solutions.drawing_utils
 
-# Load the gesture recognizer model
-model = load_model('mp_hand_gesture')
+#gesture recognizer model
+model = load_model('app\mp_hand_gesture')
 
-# Load class names
-f = open('gesture.names', 'r')
-classNames = f.read().split('\n')
-f.close()
+#the 10 different handgestures the model is trained on
+classNames = ['okay', 'peace', 'thumbs up', 'thumbs down', 'call me', 'stop', 'rock', 'live long', 'fist', 'smile']
 
 def motion_detector():
 
@@ -26,20 +24,16 @@ def motion_detector():
     cap = cv2.VideoCapture(0)
 
     while True:
-        # Read each frame from the webcam
+        #read the frames
         _, frame = cap.read()
-
         x, y, c = frame.shape
-
-        # Flip the frame vertically
         frame = cv2.flip(frame, 1)
         framergb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # Get hand landmark prediction
+        #prosesses the frames
         result = hands.process(framergb)
         className = ''
 
-        # post process the result
         if result.multi_hand_landmarks:
             landmarks = []
             for handslms in result.multi_hand_landmarks:
@@ -49,20 +43,21 @@ def motion_detector():
 
                     landmarks.append([lmx, lmy])
 
-                # Predict gesture
+                #predicts data
                 prediction = model.predict([landmarks])
                 classID = np.argmax(prediction)
                 className = classNames[classID]
 
-        # show the prediction on the frame
+        #show the prediction and destroys the window
         if className == 'thumbs up':
             cv2.putText(frame, className + ': Call activated', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
             cap.release()
             cv2.destroyAllWindows()
             return True  
 
-        # Show the final output
+        #show the final output
         cv2.imshow("Output", frame)
+        #can be exited with q-command
         if cv2.waitKey(1) == ord('q'):
             cap.release()
 
