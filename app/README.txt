@@ -1,7 +1,21 @@
-Folder for making the main app.
+#This folder contains the application aside from what is hosted at Heroku.
 
-To run motion detection function:
+##Dependencies
+###Motion detection
+-tensorflow
+-opencv-python
+-mediapipe
 
-pip install opencv-python
-pip install tensorflow
-pip install mediapipe
+###Game
+-pygame
+-numpy
+
+
+###Database service
+-mysql-connector-python
+
+###Controllers and other components
+-appJar
+-stmpy
+-paho.mqtt.client
+-threading
