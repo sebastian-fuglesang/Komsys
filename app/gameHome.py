@@ -1,4 +1,5 @@
 from socket import timeout
+from subprocess import Popen
 import paho.mqtt.client as mqtt
 import threading
 import logging
@@ -6,13 +7,15 @@ import json
 import pygame, sys
 import numpy as np
 import re
-from winner import winner
+import sys
+import winner
 
 MQTT_BROKER = 'mqtt.item.ntnu.no'
 MQTT_PORT = 1883
 
 MQTT_TOPIC = 'ttm4115/team07/gameLobby'
 MQTT_MOVES = [9,9,9]
+
 def on_connect(client, userdata, flags, rc):
 	print("Connection returned result: " + str(rc) )
 
@@ -21,9 +24,15 @@ def on_message(client, userdata, msg):
 	print(msg.topic+" "+str(msg.payload))
 	#Extract numbers from string
 	data = str(msg.payload)
-	mylist = re.findall(r'\d+', data)
 	global MQTT_MOVES 
-	MQTT_MOVES= mylist
+	if data.count("restart") == 1:
+		global restartrequest
+		restartrequest = True
+		MQTT_MOVES = [9,9,9]
+	else:
+		mylist = re.findall(r'\d+', data)
+		MQTT_MOVES= mylist
+
 
 mqtt_client = mqtt.Client()
 # callback methods
@@ -180,6 +189,12 @@ def draw_desc_diagonal(player):
 
 	pygame.draw.line( screen, color, (15, 15), (WIDTH - 15, HEIGHT - 15), WIN_LINE_WIDTH )
 
+def restart():
+	screen.fill( BG_COLOR )
+	draw_lines()
+	for row in range(BOARD_ROWS):
+		for col in range(BOARD_COLS):
+			board[row][col] = 0
 
 
 draw_lines()
@@ -187,9 +202,19 @@ draw_lines()
 player = 1
 game_over = False
 clicked_last = False
+i_am_player_no = 1
+restartrequest = False
 
 # main loop
 while True:
+	
+	if restartrequest :
+		restart()
+		player = 1
+		game_over = False
+		clicked_last = False
+		i_am_player_no = 1
+		restartrequest = False
 	
 	#Gets the next move through MQTT - User cant play before mqtt move has been made.
 	if clicked_last and MQTT_MOVES[0] != 9:
@@ -199,10 +224,9 @@ while True:
 			clicked_last = False
 
 			if check_win( player ):
-				th = threading.Thread(target=winner, args=(player,))
-				th.start()
 				game_over = True
 			player = player % 2 + 1
+	
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -234,10 +258,25 @@ while True:
 
 				
 				if check_win( player ):
-					th = threading.Thread(target=winner, args=(player,))
-					th.start()
+					if player == i_am_player_no:
+						th = threading.Thread(target=winner.winner, args=(player,))
+						th.start()
 					game_over = True
 				player = player % 2 + 1
+		
+		# press "r" to restart game.
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_r:
+				"""
+				Publish "restart"
+				"""
+				print("restarting..")
+				mqtt_client.publish(MQTT_TOPIC, "restart", qos=2)
+				restart()
+				player = 1
+				game_over = False
+				clicked_last = False
+				i_am_player_no = 2
 
 
 		# if not clicked_last:

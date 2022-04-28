@@ -94,11 +94,11 @@ class SuperAwesomeApp:
 
     def getLeaderboard(self):
         print("Called leaderboard")
-        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\main.py']) 
+        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\leaderboard.py']) 
     
     def playGame(self):
         print("Called play game")
-        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\main.py', "True"])
+        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\gameHome.py'])
 
         
 

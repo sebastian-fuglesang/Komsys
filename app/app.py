@@ -24,7 +24,7 @@ class SuperAwesomeApp:
     def playGame(self):
         print("Called play game")
         #Windows:
-        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\main.py', 'True'], shell=True)
+        Popen(['py', r'C:\Users\sigur\Documents\Master\2_semester\Deisgn\sec2\Komsys\app\main.py'])
 
     def announceAvailable(self):
         print("hei hei jeg er tilgjengelig")
