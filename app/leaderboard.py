@@ -9,11 +9,6 @@ def leaderboard():
 
     #fetch from db
     data = db.readFromDatabase()
-    print(data)
-
-    #testdata for now
-    #testdata = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
-    #testdata = sorted(testdata, key = lambda x: x[1], reverse=True)
 
     #app setup
     app.setTitle('Leaderboard')
@@ -21,13 +16,11 @@ def leaderboard():
     app.addTable('table', [['Name', 'Wins']])
     
     #adds rows in table
-    for user in data:
-        app.addTableRow('table', user)
+    app.addTableRows('table', data)
 
     app.addButton('leave', button_close)
     
     app.go()
-
 
 
 leaderboard()
