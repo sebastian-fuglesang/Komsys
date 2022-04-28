@@ -1,5 +1,5 @@
-# 
-## This folder contains the application aside from what is hosted at Heroku.
+# TTM4115 Semester Project
+### NBThis folder contains the application aside from what is hosted at Heroku.
 
 ## Dependencies
 ### Motion detection
