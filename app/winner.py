@@ -8,7 +8,7 @@ def winner(player):
     def get_input():
         name = app.getEntry('winner')
         print(name)
-        re.sub('[^a-zA-Z]+', '', name.replace(" ", "").upper())
+        name = re.sub('[^a-zA-Z]+', '', name.replace(" ", "").upper())
         db.writeToDatabase(name)
         app.stop()
 
