@@ -30,26 +30,19 @@ class OfficeController:
             print('Leaving room...')
 
         def on_leaderboard():
-            self.app.showSubWindow('Leaderboard')
+            Popen(['py', r'C:\Skole\2022Vår\TTM4115 - Design\Komsys\app\leaderboard.py'])
 
 
         def on_close():
             self.app.hideSubWindow('Leaderboard')
  
         def on_game():
-            Popen(['py', r'C:\Skole\2022Vår\TTM4115 - Design\Komsys\app\main.py', 'True'])
+            Popen(['py', r'C:\Skole\2022Vår\TTM4115 - Design\Komsys\app\gameOffice.py'])
 
         self.app.addButton('Leave', on_leave)
         self.app.addButton('See game leaderboard', on_leaderboard)
         self.app.addButton('Spill', on_game)
         self.app.setLocation(0, 200)
-        self.app.startSubWindow('Leaderboard', modal=True)
-        self.app.addTable('table', [['Name', 'Wins']])
-
-        self.app.addButton('Close', on_close)
-
-        data = db.readFromDatabase()
-        self.app.addTableRows('table', data)
 
         self.app.go()
 
