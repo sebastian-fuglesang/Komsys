@@ -28,7 +28,7 @@ class SuperAwesomeApp:
 
     def announceAvailable(self):
         self.app.setButtonBg("Tilgjengelig", "green")
-        self.app.setButtonBg("Utilgjengelig", "gray")
+        self.app.setButtonBg("Utilgjengelig", "grey")
         self.app.setLabel("STATUS", "STATUS: Tilgjengelig")
         self.mqtt_client.subscribe("ttm4115/team07/calls")  # subscribe via MQTT I'm available
         homeController.announce_available()
@@ -153,8 +153,8 @@ class SuperAwesomeApp:
         self.app.setButtonBg("Leaderboard", "grey")
         self.app.setButtonBg("Aksepter samtale", "grey")
         self.app.setButtonBg("Nekt samtale", "grey")
-        self.app.setButtonBg("Tilgjengelig", "green")
-        self.app.setButtonBg("Utilgjengelig", "grey")
+        self.app.setButtonBg("Tilgjengelig", "grey")
+        self.app.setButtonBg("Utilgjengelig", "green")
         self.app.setButtonBg("Forlat samtale", "grey")
         self.app.setButtonBg('Leaderboard', 'green')
         self.app.addLabel("STATUS", "STATUS: Utilgjengelig")
