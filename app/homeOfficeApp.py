@@ -13,16 +13,12 @@ import os
 from subprocess import Popen
 from gameDBService import db
 
-#Kopierte kode fra app.py inn i appHomeController
-
-# TODO: choose proper MQTT broker address
 MQTT_BROKER='mqtt.item.ntnu.no'
 MQTT_PORT=1883
 
 # TODO: choose proper topics for communication
 MQTT_TOPIC_INPUT='ttm4115/team07/mainApp'
 MQTT_TOPIC_OUTPUT='ttm4115/team07/mainApp'
-
 
 
 class SuperAwesomeApp:
@@ -35,7 +31,7 @@ class SuperAwesomeApp:
         self.app.setButtonBg("Utilgjengelig", "gray")
         self.app.setLabel("STATUS", "STATUS: Tilgjengelig")
         self.mqtt_client.subscribe("ttm4115/team07/calls")  # subscribe via MQTT I'm available
-        homeController.announce_available() #kaller announce_available i homeController når en trykker på knappen tilgjengelig
+        homeController.announce_available()
 
     def announceUnavailable(self):
         self.publish_command("Unavailable")
@@ -43,7 +39,7 @@ class SuperAwesomeApp:
         self.app.setButtonBg("Utilgjengelig", "green")
         self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
         self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm unavailable
-        homeController.announce_unavailable() #kaller announce_unavailable i homeController når en trykker på knappen utilgjengelig
+        homeController.announce_unavailable()
 
     def publish_command(self, command):
         payload=json.dumps(command)
@@ -58,7 +54,7 @@ class SuperAwesomeApp:
             #Global variable to be used in homeController state machine
             videoResponse=True
             print("Videoresponse true")
-            homeController.respond_to_call() #kaller homeController sin funksjon respond_to_call som trigger tilstandsendring
+            homeController.respond_to_call()
             webbrowser.open_new(
                 'https://heroku-call-service.herokuapp.com/' + self.most_recent_room[2:-1])
             self.app.setButtonBg("Aksepter samtale", "grey")
@@ -80,7 +76,7 @@ class SuperAwesomeApp:
             self.app.setButtonBg("Tilgjengelig", "green")
             self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
             self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm not accepting call
-            homeController.respond_to_call() #kaller homeController sin funksjon respond_to_call som trigger tilstandsendring
+            homeController.respond_to_call()
 
     def leaveCall(self):
         if homeController.stm.state == 'callActive':
@@ -114,8 +110,8 @@ class SuperAwesomeApp:
             self.app.setButtonBg("Aksepter samtale", "green")
             self.app.setButtonBg("Nekt samtale", "red")
             self.app.setButtonBg("Utilgjengelig", "grey")
-            homeController.stm.send('call_invite') #sender trigger call_invite for å endre tilstand til respond_to_call
-    
+            homeController.stm.send('call_invite')
+ 
     def start_gui(self):
         self.app.go()
 
@@ -166,16 +162,8 @@ class SuperAwesomeApp:
         #leaderboard subwindow
         self.app.startSubWindow('Leaderboard window', modal=True)
         data = db.readFromDatabase()
-        #data = [['Nils', 2], ['Olav', 3], ['Tuv', 0]]
-        #data = sorted(data, key = lambda x: x[1], reverse=True)
         self.app.addTable('table', [['Name', 'Wins']])
         self.app.addTableRows('table', data)
-
-        
-        #self.app.go()
-        #Kommenterte ut det ovenfor fordi jeg ønsker å starte gui etter state machinen er startet
-
-    #Lagde egen funksjon for å starte gui   
     
 
     def stop(self):
@@ -249,8 +237,6 @@ if __name__ == "__main__":
 
     callActive = {'name': 'callActive',
         'entry': 'start_video_stream()'}
-
-
 
     #Make state machines of homeController:
     stm_homeController = Machine(transitions=[t0, t1, t2, t3, t4, t5, t6], obj=homeController, states=[unavailable, available, respondToCall,callActive], name='stm_homeController')
