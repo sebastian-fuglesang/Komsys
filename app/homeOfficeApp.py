@@ -31,18 +31,16 @@ class SuperAwesomeApp:
     """
 
     def announceAvailable(self):
-        print("hei hei jeg er tilgjengelig")
-        self.app.setButtonBg("Tilgjengelig", "grey")
-        self.app.setButtonBg("Utilgjengelig", "green")
+        self.app.setButtonBg("Tilgjengelig", "green")
+        self.app.setButtonBg("Utilgjengelig", "gray")
         self.app.setLabel("STATUS", "STATUS: Tilgjengelig")
         self.mqtt_client.subscribe("ttm4115/team07/calls")  # subscribe via MQTT I'm available
         homeController.announce_available() #kaller announce_available i homeController når en trykker på knappen tilgjengelig
 
     def announceUnavailable(self):
         self.publish_command("Unavailable")
-        print("hei hei jeg er ikke tilgjengelig")
-        self.app.setButtonBg("Tilgjengelig", "green")
-        self.app.setButtonBg("Utilgjengelig", "grey")
+        self.app.setButtonBg("Tilgjengelig", "grey")
+        self.app.setButtonBg("Utilgjengelig", "green")
         self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
         self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm unavailable
         homeController.announce_unavailable() #kaller announce_unavailable i homeController når en trykker på knappen utilgjengelig
@@ -110,7 +108,7 @@ class SuperAwesomeApp:
     def on_message(self, client, userdata, msg):
         print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
         print(msg.payload)
-        if (msg.topic == "ttm4115/team07/calls" and homeController.stm.state == 'idle'):
+        if (msg.topic == "ttm4115/team07/calls" and homeController.stm.state == 'available  '):
             self.most_recent_room=str(msg.payload)
             self.getting_called=True
             self.app.setButtonBg("Aksepter samtale", "green")
@@ -189,23 +187,20 @@ class SuperAwesomeApp:
 
 class HomeController:
 
-    def init(self):
-        print('Start up!')
-        print(self.stm.driver.print_status())
-
     def announce_available(self):
         print('Available for Video call')
+        self.stm.send('announce_available')
         print(self.stm.driver.print_status())
-
 
     def announce_unavailable(self):
         print('Unavailable for Video call')
+        self.stm.send('announce_unavailable')
         print(self.stm.driver.print_status())
 
     def respond_to_call(self):
         print('In Response to call state')
         print(self.stm.driver.print_status())
-        self.stm.send('call_response') #aktiverer triggeren call_response
+        self.stm.send('call_response')
 
 
     def start_video_stream(self):
@@ -237,18 +232,18 @@ if __name__ == "__main__":
     videoResponse = False 
 
     #homeController Transitions:
-    t0 = {'source':'initial',  'target':'idle'}
-    t1 = {'trigger':'call_invite', 'source':'idle', 'target':'respondToCall'}
+    t0 = {'source':'initial',  'target':'unavailable'}
+    t1 = {'trigger':'call_invite', 'source':'available', 'target':'respondToCall'}
     t2 = {'trigger':'call_response', 'source':'respondToCall', 'function':homeController.respond_call_transition}
     t3 = {'trigger':'play_game', 'source':'callActive', 'target':'callActive'}
-    t4 = {'trigger':'leave', 'source':'callActive', 'target':'idle', 'effect':'stop_stream()'}
+    t4 = {'trigger':'leave', 'source':'callActive', 'target':'available', 'effect':'stop_stream()'}
+    t5 = {'trigger': 'announce_available', 'source': 'unavailable', 'target': 'available'}
+    t6 = {'trigger': 'announce_unavailable', 'source': 'available', 'target': 'unavailable'}
 
     # We declare dicts for the homeController states
-    initial = {'name': 'initial',
-        'entry': 'init()'}
+    unavailable = {'name': 'unavailable'}
 
-    idle = {'name': 'idle',
-        'entry': 'announce_available()', 'exit': 'announce_unavailable()'}
+    available = {'name': 'available'}
 
     respondToCall = {'name': 'respondToCall'}
 
@@ -258,7 +253,7 @@ if __name__ == "__main__":
 
 
     #Make state machines of homeController:
-    stm_homeController = Machine(transitions=[t0, t1, t2, t3, t4], obj=homeController, states=[idle,respondToCall,callActive], name='stm_homeController')
+    stm_homeController = Machine(transitions=[t0, t1, t2, t3, t4, t5, t6], obj=homeController, states=[unavailable, available, respondToCall,callActive], name='stm_homeController')
     homeController.stm = stm_homeController
 
     driver.add_machine(stm_homeController)
