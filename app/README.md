@@ -1,6 +1,7 @@
 # TTM4115 Semester Project
 ### NB: This folder contains the application aside from what is hosted at Heroku. 
 ### The code for the video and chat service hosted on Heroku is provided in the folder named CallService
+### NB: The database on Azure has been turned off now since the project is completed.
 
 ## Dependencies
 ### Motion detection
