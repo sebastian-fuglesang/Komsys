@@ -73,7 +73,8 @@ class SuperAwesomeApp:
             videoResponse=False
             self.app.setButtonBg("Aksepter samtale", "grey")
             self.app.setButtonBg("Nekt samtale", "grey")
-            self.app.setButtonBg("Tilgjengelig", "green")
+            self.app.setButtonBg("Tilgjengelig", "grey")
+            self.app.setButtonBg("Utilgjengelig", "green")
             self.app.setLabel("STATUS", "STATUS: Utilgjengelig")
             self.mqtt_client.unsubscribe("ttm4115/team07/calls")  # unsubscribe via MQTT I'm not accepting call
             homeController.respond_to_call()
@@ -104,7 +105,9 @@ class SuperAwesomeApp:
     def on_message(self, client, userdata, msg):
         print("on_message(): topic: {} with payload: {}".format(msg.topic, msg.payload))
         print(msg.payload)
-        if (msg.topic == "ttm4115/team07/calls" and homeController.stm.state == 'available  '):
+        print(homeController.stm.state)
+        if (msg.topic == "ttm4115/team07/calls" and homeController.stm.state == 'available'):
+            print("check")
             self.most_recent_room=str(msg.payload)
             self.getting_called=True
             self.app.setButtonBg("Aksepter samtale", "green")
